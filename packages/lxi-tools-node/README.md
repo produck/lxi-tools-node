@@ -347,6 +347,16 @@ js/
 | `lib/benchmark.js`  | `benchmark.c`                  | Benchmark         |
 | `lib/screenshot.js` | `screenshot.c` + `plugins/*.c` | Screenshot        |
 
+## Acknowledgments
+
+This JavaScript port was developed with the decisive
+contribution of **Claude Opus** (Anthropic) serving as
+the AI pair-programmer. Opus performed the full
+C → JavaScript translation, designed the zero-dependency
+architecture, implemented the ONC-RPC / XDR / VXI-11
+protocol stack, authored all 24 screenshot plugins, and
+wrote the test suite and documentation.
+
 ## License
 
 BSD-3-Clause — Ported from

@@ -4,6 +4,9 @@
 	"description": "Pure Node.js implementation with zero external dependencies. Supports VXI-11 and RAW/TCP protocols.",
 	"license": "MIT",
 	"author": "ChaosLee",
+	"contributors": [
+		"Opus (AI pair-programmer)"
+	],
 	"keywords": [
 		"lxi",
 		"vxi-11",
