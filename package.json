@@ -1,0 +1,27 @@
+{
+	"name": "@produck/lxi-tools-node-workspace",
+	"private": true,
+	"scripts": {
+		"deps:install": "npm -v && npm install",
+		"deps:ci-install": "npm install --include=optional",
+		"lint": "eslint . --fix",
+		"test": "npm run test --workspaces --if-present",
+		"coverage": "c8 npm run test",
+		"publish": "npm run lint && lerna publish"
+	},
+	"workspaces": [
+		"packages/*"
+	],
+	"license": "MIT",
+	"devDependencies": {
+		"@eslint/compat": "^2.0.3",
+		"@eslint/js": "^10.0.1",
+		"@produck/eslint-rules": "^0.2.7",
+		"@types/node": "^25.5.0",
+		"c8": "^11.0.0",
+		"eslint": "^10.1.0",
+		"globals": "^17.4.0",
+		"lerna": "^9.0.7",
+		"typescript-eslint": "^8.58.0"
+	}
+}
