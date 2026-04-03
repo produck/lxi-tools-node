@@ -1,5 +1,6 @@
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import globals from 'globals';
 import * as ProduckEslint from '@produck/eslint-rules';
 
 export default [
@@ -8,7 +9,9 @@ export default [
 	},
 	{
 		languageOptions: {
-			globals: {},
+			globals: {
+				...globals.node,
+			},
 		},
 	},
 	pluginJs.configs.recommended,

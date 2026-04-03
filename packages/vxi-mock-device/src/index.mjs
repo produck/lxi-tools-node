@@ -239,8 +239,10 @@ export class MockDevice {
 		this._pending = new Map();
 		this._pmServer = null;
 		this._vxiServer = null;
+		this._rawServer = null;
 		this._portmapperPort = 0;
 		this._vxi11Port = 0;
+		this._rawPort = 0;
 
 		// Built-in default handler
 		this.handle('*IDN?', () => this._identity);
@@ -251,6 +253,9 @@ export class MockDevice {
 
 	/** TCP port the VXI-11 core channel is listening on. */
 	get vxi11Port() { return this._vxi11Port; }
+
+	/** TCP port the RAW/SCPI server is listening on. */
+	get rawPort() { return this._rawPort; }
 
 	/** Configured *IDN? identity string. */
 	get identity() { return this._identity; }
@@ -286,7 +291,7 @@ export class MockDevice {
 	 * @param {number} [portmapperPort=0]
 	 * @param {number} [vxi11Port=0]
 	 */
-	async start(portmapperPort = 0, vxi11Port = 0) {
+	async start(portmapperPort = 0, vxi11Port = 0, rawPort = 0) {
 		// VXI-11 server (start first so we know the port for portmapper)
 		this._vxiServer = net.createServer((socket) => {
 			new ConnectionHandler(socket, (call) => this._onVxi11(call));
@@ -300,6 +305,13 @@ export class MockDevice {
 		});
 		await listen(this._pmServer, portmapperPort);
 		this._portmapperPort = this._pmServer.address().port;
+
+		// RAW/SCPI TCP server (line-based protocol on port 5025)
+		this._rawServer = net.createServer((socket) => {
+			this._handleRawConnection(socket);
+		});
+		await listen(this._rawServer, rawPort);
+		this._rawPort = this._rawServer.address().port;
 	}
 
 	/**
@@ -309,9 +321,11 @@ export class MockDevice {
 		await Promise.all([
 			this._pmServer && new Promise((r) => this._pmServer.close(r)),
 			this._vxiServer && new Promise((r) => this._vxiServer.close(r)),
+			this._rawServer && new Promise((r) => this._rawServer.close(r)),
 		]);
 		this._pmServer = null;
 		this._vxiServer = null;
+		this._rawServer = null;
 		this._links.clear();
 		this._pending.clear();
 	}
@@ -448,6 +462,41 @@ export class MockDevice {
 		w.writeInt32(0); // error
 
 		return w.toBuffer();
+	}
+
+	// ── RAW/SCPI TCP ──────────────────────────────────────────────────
+
+	_handleRawConnection(socket) {
+		let buf = '';
+
+		socket.on('data', async (chunk) => {
+			buf += chunk.toString();
+
+			let newlineIdx;
+
+			while ((newlineIdx = buf.indexOf('\n')) !== -1) {
+				const line = buf.substring(0, newlineIdx).trim();
+
+				buf = buf.substring(newlineIdx + 1);
+
+				if (!line) continue;
+
+				const key = line.toUpperCase();
+				const handler = this._handlers.get(key);
+
+				if (handler) {
+					const result = await handler(line);
+
+					if (result != null) {
+						const data = Buffer.isBuffer(result) ? result : Buffer.from(String(result) + '\n');
+
+						socket.write(data);
+					}
+				}
+			}
+		});
+
+		socket.on('error', () => socket.destroy());
 	}
 }
 

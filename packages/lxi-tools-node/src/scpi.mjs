@@ -14,7 +14,7 @@ const RESPONSE_LENGTH_MAX = 0x500000;
  * @returns {boolean}
  */
 export function isQuery(command) {
-  return command.includes('?');
+	return command.includes('?');
 }
 
 /**
@@ -29,36 +29,36 @@ export function isQuery(command) {
  * @returns {Promise<string|null>} Response string if query, null if command
  */
 export async function scpi(address, options = {}) {
-  const port = options.port ?? 0;
-  const timeout = options.timeout ?? 3000;
-  const protocol = options.protocol ?? Protocol.VXI11;
-  let command = options.command;
+	const port = options.port ?? 0;
+	const timeout = options.timeout ?? 3000;
+	const protocol = options.protocol ?? Protocol.VXI11;
+	let command = options.command;
 
-  if (!command) throw new Error('Missing SCPI command');
+	if (!command) throw new Error('Missing SCPI command');
 
-  // Strip trailing spaces
-  command = command.trimEnd();
+	// Strip trailing spaces
+	command = command.trimEnd();
 
-  // For RAW protocol, append newline
-  if (protocol === Protocol.RAW) {
-    command = command + '\n';
-  }
+	// For RAW protocol, append newline
+	if (protocol === Protocol.RAW) {
+		command = command + '\n';
+	}
 
-  const device = await connect(address, port, null, timeout, protocol);
-  try {
-    await send(device, command, timeout);
+	const device = await connect(address, port, null, timeout, protocol);
+	try {
+		await send(device, command, timeout);
 
-    if (isQuery(command)) {
-      const response = await receive(device, RESPONSE_LENGTH_MAX, timeout);
-      let text = response.toString();
-      // Strip trailing newline/carriage return
-      text = text.replace(/[\r\n]+$/, '');
-      return text;
-    }
-    return null;
-  } finally {
-    await disconnect(device);
-  }
+		if (isQuery(command)) {
+			const response = await receive(device, RESPONSE_LENGTH_MAX, timeout);
+			let text = response.toString();
+			// Strip trailing newline/carriage return
+			text = text.replace(/[\r\n]+$/, '');
+			return text;
+		}
+		return null;
+	} finally {
+		await disconnect(device);
+	}
 }
 
 /**
@@ -71,25 +71,25 @@ export async function scpi(address, options = {}) {
  * @returns {Promise<string|null>} Response string if query, null otherwise
  */
 export async function scpiOnDevice(device, command, timeout) {
-  const info = getSessionInfo(device);
-  if (!info) throw new Error(`Invalid device handle: ${device}`);
+	const info = getSessionInfo(device);
+	if (!info) throw new Error(`Invalid device handle: ${device}`);
 
-  command = command.trimEnd();
+	command = command.trimEnd();
 
-  // For RAW protocol, append newline
-  if (info.protocol === Protocol.RAW) {
-    command = command + '\n';
-  }
+	// For RAW protocol, append newline
+	if (info.protocol === Protocol.RAW) {
+		command = command + '\n';
+	}
 
-  await send(device, command, timeout);
+	await send(device, command, timeout);
 
-  if (isQuery(command)) {
-    const response = await receive(device, RESPONSE_LENGTH_MAX, timeout);
-    let text = response.toString();
-    text = text.replace(/[\r\n]+$/, '');
-    return text;
-  }
-  return null;
+	if (isQuery(command)) {
+		const response = await receive(device, RESPONSE_LENGTH_MAX, timeout);
+		let text = response.toString();
+		text = text.replace(/[\r\n]+$/, '');
+		return text;
+	}
+	return null;
 }
 
 /**
@@ -102,11 +102,11 @@ export async function scpiOnDevice(device, command, timeout) {
  * @returns {Promise<Buffer|null>} Raw response buffer if query, null otherwise
  */
 export async function scpiRaw(device, command, timeout) {
-  const commandString = Buffer.isBuffer(command) ? command.toString() : command;
-  await send(device, command, timeout);
+	const commandString = Buffer.isBuffer(command) ? command.toString() : command;
+	await send(device, command, timeout);
 
-  if (isQuery(commandString)) {
-    return receive(device, RESPONSE_LENGTH_MAX, timeout);
-  }
-  return null;
+	if (isQuery(commandString)) {
+		return receive(device, RESPONSE_LENGTH_MAX, timeout);
+	}
+	return null;
 }
