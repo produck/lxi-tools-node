@@ -5,7 +5,7 @@
  * measures requests per second.
  */
 
-import { connect, send, receive, disconnect, Protocol } from './lxi.js';
+import { connect, send, receive, disconnect, Protocol } from './lxi.mjs';
 
 const ID_LENGTH_MAX = 65536;
 

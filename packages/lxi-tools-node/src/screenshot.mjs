@@ -5,7 +5,7 @@
  * Supports auto-detection of instrument type via *IDN? regex matching.
  */
 
-import { connect, send, receive, disconnect, Protocol } from './lxi.js';
+import { connect, send, receive, disconnect, Protocol } from './lxi.mjs';
 
 const IMAGE_SIZE_MAX = 0x400000;     // 4 MB default
 const IMAGE_SIZE_MAX_RS = 0x1400000; // 20 MB for R&S

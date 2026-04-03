@@ -16,7 +16,7 @@ import {
   buildPortmapperGetPort,
   parsePortmapperGetPortReply,
   wrapRecordMarking,
-} from './rpc.js';
+} from './rpc.mjs';
 
 // VXI-11 Core Channel
 const VXI11_CORE_PROGRAM = 0x0607af; // 395183
@@ -53,36 +53,72 @@ function tcpConnect(host, port, timeout) {
   });
 }
 
+/**
+ * Send an RPC request and receive the complete RPC record reply.
+ *
+ * Handles multi-fragment record marking (RFC 5531 §11):
+ *   record = fragment1 + fragment2 + ... + fragmentN
+ *   Each fragment: 4-byte header (high bit = last flag, low 31 bits = length) + data
+ */
 function tcpSendAndReceive(socket, data, timeout) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let totalLength = 0;
-    let expectedLength = -1;
+
+    // Prepend any overflow data from a previous call
+    if (socket._rxOverflow && socket._rxOverflow.length > 0) {
+      chunks.push(socket._rxOverflow);
+      totalLength = socket._rxOverflow.length;
+      socket._rxOverflow = null;
+    }
 
     const timer = setTimeout(() => {
       cleanup();
       reject(new Error('RPC receive timed out'));
     }, timeout);
 
+    /**
+     * Try to parse all record-marking fragments from the accumulated buffer.
+     * Returns true if a complete record (last-fragment flag set) has been assembled.
+     */
+    function tryResolve() {
+      const combined = totalLength === 0 ? null : Buffer.concat(chunks);
+      if (!combined) return false;
+
+      const payloadParts = [];
+      let offset = 0;
+
+      while (offset + 4 <= combined.length) {
+        const header = combined.readUInt32BE(offset);
+        const isLast = !!(header & 0x80000000);
+        const fragLen = header & 0x7fffffff;
+
+        // Wait for more data if this fragment is not fully received yet
+        if (offset + 4 + fragLen > combined.length) break;
+
+        payloadParts.push(combined.subarray(offset + 4, offset + 4 + fragLen));
+        offset += 4 + fragLen;
+
+        if (isLast) {
+          cleanup();
+          // Save any bytes beyond this record for the next RPC call
+          if (offset < combined.length) {
+            socket._rxOverflow = combined.subarray(offset);
+          }
+          resolve(Buffer.concat(payloadParts));
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Check if overflow data already contains a complete record
+    if (totalLength > 0 && tryResolve()) return;
+
     function onData(chunk) {
       chunks.push(chunk);
       totalLength += chunk.length;
-
-      // Parse record marking header to know total expected length
-      if (expectedLength < 0 && totalLength >= 4) {
-        const combined = Buffer.concat(chunks);
-        const header = combined.readUInt32BE(0);
-        expectedLength = (header & 0x7fffffff) + 4; // fragment length + 4 byte header
-      }
-
-      if (expectedLength > 0 && totalLength >= expectedLength) {
-        cleanup();
-        const combined = Buffer.concat(chunks);
-        // Strip record marking header
-        const header = combined.readUInt32BE(0);
-        const fragmentLength = header & 0x7fffffff;
-        resolve(combined.subarray(4, 4 + fragmentLength));
-      }
+      tryResolve();
     }
 
     function onError(err) {
@@ -245,6 +281,8 @@ export class Vxi11Session {
     try {
       const payloadBuffer = buildDestroyLink(this._linkId);
       await this._rpcCall(DESTROY_LINK, payloadBuffer);
+    } catch {
+      // Ignore destroy_link errors — socket will be destroyed anyway
     } finally {
       this._socket.destroy();
     }

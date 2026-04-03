@@ -11,8 +11,8 @@ import {
   XdrReader,
   buildRpcCall,
   parseRpcReply,
-} from './rpc.js';
-import { connect, send, receive, disconnect, Protocol } from './lxi.js';
+} from './rpc.mjs';
+import { connect, send, receive, disconnect, Protocol } from './lxi.mjs';
 import os from 'node:os';
 
 const PORTMAPPER_PROGRAM = 100000;

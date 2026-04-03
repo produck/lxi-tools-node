@@ -6,7 +6,7 @@
  */
 
 import net from 'node:net';
-import { vxi11Connect } from './vxi11.js';
+import { vxi11Connect } from './vxi11.mjs';
 
 export const Protocol = Object.freeze({
   VXI11: 'VXI11',

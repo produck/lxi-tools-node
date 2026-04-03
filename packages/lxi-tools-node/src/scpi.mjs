@@ -4,7 +4,7 @@
  * Mirrors scpi.c from lxi-tools — send SCPI commands and receive responses.
  */
 
-import { connect, send, receive, disconnect, Protocol, getSessionInfo } from './lxi.js';
+import { connect, send, receive, disconnect, Protocol, getSessionInfo } from './lxi.mjs';
 
 const RESPONSE_LENGTH_MAX = 0x500000;
 
