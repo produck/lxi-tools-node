@@ -4,6 +4,9 @@
 		"noEmit": true,
 		"lib": [
 			"ESNext"
+		],
+		"types": [
+			"node"
 		]
 	}
 }

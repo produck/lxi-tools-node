@@ -7,9 +7,11 @@
 	"keywords": [
 		"lxi",
 		"vxi-11",
+		"vxi11",
 		"raw-tcp",
 		"scpi",
 		"instrument",
+		"test-equipment",
 		"node"
 	],
 	"repository": {
@@ -40,5 +42,8 @@
 	"scripts": {
 		"test": "node ./test/index.mjs",
 		"test:only": "node --test-only ./test/index.mjs"
+	},
+	"devDependencies": {
+		"@types/node": "^25.5.0"
 	}
 }
