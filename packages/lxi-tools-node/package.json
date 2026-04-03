@@ -1,0 +1,44 @@
+{
+	"name": "@produck/lxi-tools-node",
+	"version": "0.0.1",
+	"description": "Pure Node.js implementation with zero external dependencies. Supports VXI-11 and RAW/TCP protocols.",
+	"license": "MIT",
+	"author": "ChaosLee",
+	"keywords": [
+		"lxi",
+		"vxi-11",
+		"raw-tcp",
+		"scpi",
+		"instrument",
+		"node"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/produck/lxi-tools-node.git",
+		"directory": "packages/lxi-tools-node"
+	},
+	"bugs": {
+		"url": "https://github.com/produck/lxi-tools-node/issues"
+	},
+	"homepage": "https://github.com/produck/lxi-tools-node#readme",
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"main": "src/index.mjs",
+	"types": "index.d.ts",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./src/index.mjs"
+		}
+	},
+	"files": [
+		"src",
+		"index.d.ts"
+	],
+	"scripts": {
+		"test": "node ./test/index.mjs",
+		"test:only": "node --test-only ./test/index.mjs"
+	}
+}
