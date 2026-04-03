@@ -1,0 +1,40 @@
+{
+	"name": "@produck/vxi-mock-device",
+	"version": "0.0.1",
+	"description": "VXI-11 mock instrument for testing lxi-tools-node without real hardware.",
+	"license": "MIT",
+	"author": "ChaosLee",
+	"contributors": [
+		"Opus (AI pair-programmer)"
+	],
+	"keywords": [
+		"vxi-11",
+		"vxi11",
+		"mock",
+		"stub",
+		"instrument",
+		"test",
+		"lxi"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/produck/lxi-tools-node.git",
+		"directory": "packages/vxi-mock-device"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"main": "src/index.mjs",
+	"types": "index.d.ts",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./src/index.mjs"
+		}
+	},
+	"files": [
+		"src",
+		"index.d.ts"
+	]
+}

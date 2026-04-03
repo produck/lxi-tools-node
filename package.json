@@ -10,7 +10,8 @@
 		"publish": "npm run lint && lerna publish"
 	},
 	"workspaces": [
-		"packages/*"
+		"packages/lxi-tools-node",
+		"packages/vxi-mock-device"
 	],
 	"license": "MIT",
 	"devDependencies": {
