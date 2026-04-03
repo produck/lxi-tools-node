@@ -43,7 +43,7 @@ async function main() {
 
   // 4. 保存到文件
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const filename = `screenshot_${Date.now()}.${result.format}`;
+  const filename = `screenshot_${Date.now()}.gen.${result.format}`;
   const filepath = path.join(OUT_DIR, filename);
   fs.writeFileSync(filepath, result.data);
   console.log(`已保存: ${filepath}`);
