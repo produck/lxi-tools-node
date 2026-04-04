@@ -47,6 +47,7 @@
 		"test:only": "node --test-only ./test/index.mjs"
 	},
 	"devDependencies": {
+		"@produck/vxi-mock-device": "*",
 		"@types/node": "^25.5.0"
 	}
 }
