@@ -18,7 +18,6 @@ export declare namespace lxi {
 	/** Session information for a connected device. */
 	interface SessionInfo {
 		/** @internal */
-		_session: any;
 		protocol: ProtocolType;
 		timeout: number;
 	}

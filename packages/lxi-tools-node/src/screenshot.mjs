@@ -55,7 +55,7 @@ function tmcQueryPlugin(name, description, regex, command, format, options = {})
 		async capture(address, id, timeout, port = 0) {
 			const device = await connect(address, port, null, timeout, Protocol.VXI11);
 			try {
-					for (const preCommand of preCommands) {
+				for (const preCommand of preCommands) {
 					await send(device, preCommand, timeout);
 				}
 
@@ -84,7 +84,7 @@ function rawDumpPlugin(name, description, regex, commands, format, options = {})
 			const device = await connect(address, port, null, timeout, Protocol.VXI11);
 			try {
 				if (Array.isArray(commands)) {
-						for (let i = 0; i < commands.length - 1; i++) {
+					for (let i = 0; i < commands.length - 1; i++) {
 						await send(device, commands[i], timeout);
 					}
 					await send(device, commands[commands.length - 1], timeout);
@@ -128,7 +128,7 @@ function fileBasedPlugin(name, description, regex, config) {
 				// Wait command (e.g., *OPC)
 				if (config.waitCommand) {
 					await send(device, config.waitCommand, timeout);
-					const operationCompleteResponse = await receive(device, 256, timeout);
+					await receive(device, 256, timeout);
 				}
 
 				// Read file command

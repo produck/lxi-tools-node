@@ -285,11 +285,6 @@ describe('vxi11', () => {
 			return rpc.wrapRecordMarking(w.toBuffer());
 		}
 
-		function extractXid(recordBuf) {
-			// Skip 4-byte record marking header, read xid
-			return recordBuf.readUInt32BE(4);
-		}
-
 		function createFakeVxi11Server(onCall) {
 			return new Promise((resolve) => {
 				const server = net.createServer((socket) => {
@@ -489,7 +484,6 @@ describe('vxi11', () => {
 
 		it('should handle RPC overflow (pipelined replies in one TCP packet).', async () => {
 			let callCount = 0;
-			let pendingReadXid = null;
 			const { server, port } = await createFakeVxi11Server((xid, record, socket) => {
 				callCount++;
 

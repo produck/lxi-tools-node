@@ -6,12 +6,7 @@
  */
 
 import dgram from 'node:dgram';
-import {
-	XdrWriter,
-	XdrReader,
-	buildRpcCall,
-	parseRpcReply,
-} from './rpc.mjs';
+import { XdrWriter, buildRpcCall } from './rpc.mjs';
 import { connect, send, receive, disconnect, Protocol } from './lxi.mjs';
 import os from 'node:os';
 
@@ -49,7 +44,12 @@ export async function discoverVxi11(options = {}) {
 	writer.writeUInt32(VXI11_CORE_VERSION);
 	writer.writeUInt32(IPPROTO_TCP);
 	writer.writeUInt32(0);
-	const { buffer } = buildRpcCall(PORTMAPPER_PROGRAM, PORTMAPPER_VERSION, PORTMAPPER_PROC_GETPORT, writer.toBuffer());
+	const { buffer } = buildRpcCall(
+		PORTMAPPER_PROGRAM,
+		PORTMAPPER_VERSION,
+		PORTMAPPER_PROC_GETPORT,
+		writer.toBuffer(),
+	);
 
 	// Get all broadcast addresses from network interfaces
 	const interfaces = os.networkInterfaces();
@@ -61,7 +61,9 @@ export async function discoverVxi11(options = {}) {
 				// Calculate broadcast address from IP and netmask
 				const ipParts = interfaceAddress.address.split('.').map(Number);
 				const maskParts = interfaceAddress.netmask.split('.').map(Number);
-				const broadcast = ipParts.map((ip, i) => (ip | (~maskParts[i] & 255))).join('.');
+				const broadcast = ipParts
+					.map((ip, i) => ip | (~maskParts[i] & 255))
+					.join('.');
 				broadcastTargets.push({ name, broadcast });
 			}
 		}
@@ -77,7 +79,13 @@ export async function discoverVxi11(options = {}) {
 			// Try to get device ID via SCPI *IDN?
 			let id = 'Unknown';
 			try {
-				const device = await connect(remoteInfo.address, vxiPort, 'inst0', timeout, Protocol.VXI11);
+				const device = await connect(
+					remoteInfo.address,
+					vxiPort,
+					'inst0',
+					timeout,
+					Protocol.VXI11,
+				);
 				try {
 					await send(device, '*IDN?');
 					const response = await receive(device, 65536, 3000);
@@ -143,17 +151,17 @@ export async function discoverMdns(options = {}) {
 		labels.push(Buffer.from([0])); // root label
 
 		const header = Buffer.alloc(12);
-		header.writeUInt16BE(0, 0);  // Transaction ID
-		header.writeUInt16BE(0, 2);  // Flags
-		header.writeUInt16BE(1, 4);  // Questions
-		header.writeUInt16BE(0, 6);  // Answer RRs
-		header.writeUInt16BE(0, 8);  // Authority RRs
+		header.writeUInt16BE(0, 0); // Transaction ID
+		header.writeUInt16BE(0, 2); // Flags
+		header.writeUInt16BE(1, 4); // Questions
+		header.writeUInt16BE(0, 6); // Answer RRs
+		header.writeUInt16BE(0, 8); // Authority RRs
 		header.writeUInt16BE(0, 10); // Additional RRs
 
 		const questionName = Buffer.concat(labels);
 		const questionType = Buffer.alloc(4);
 		questionType.writeUInt16BE(12, 0); // PTR
-		questionType.writeUInt16BE(1, 2);  // IN class
+		questionType.writeUInt16BE(1, 2); // IN class
 
 		return Buffer.concat([header, questionName, questionType]);
 	}
@@ -185,7 +193,11 @@ export async function discoverMdns(options = {}) {
 		});
 
 		socket.bind(0, () => {
-			try { socket.addMembership(mdnsAddr); } catch { /* ignore */ }
+			try {
+				socket.addMembership(mdnsAddr);
+			} catch {
+				/* ignore */
+			}
 
 			const queries = [
 				buildMdnsQuery('_lxi._tcp.local'),
@@ -235,7 +247,10 @@ export function parseMdnsResponse(buffer) {
 	const questionCount = buffer.readUInt16BE(4);
 	for (let i = 0; i < questionCount && offset < buffer.length; i++) {
 		while (offset < buffer.length && buffer[offset] !== 0) {
-			if ((buffer[offset] & 0xc0) === 0xc0) { offset += 2; break; }
+			if ((buffer[offset] & 0xc0) === 0xc0) {
+				offset += 2;
+				break;
+			}
 			offset += buffer[offset] + 1;
 		}
 		if (offset < buffer.length && buffer[offset] === 0) offset++;
@@ -266,7 +281,7 @@ export function parseMdnsResponse(buffer) {
 			records.push({ type: 'SRV', name, port, target });
 		} else if (type === 1 && resourceDataLength === 4) {
 			// A record
-			const address = `${buffer[offset]}.${buffer[offset+1]}.${buffer[offset+2]}.${buffer[offset+3]}`;
+			const address = `${buffer[offset]}.${buffer[offset + 1]}.${buffer[offset + 2]}.${buffer[offset + 3]}`;
 			records.push({ type: 'A', name, address });
 		} else if (type === 16) {
 			// TXT record
@@ -274,8 +289,13 @@ export function parseMdnsResponse(buffer) {
 			const texts = [];
 			while (textOffset < offset + resourceDataLength) {
 				const textLength = buffer[textOffset++];
-				if (textLength > 0 && textOffset + textLength <= offset + resourceDataLength) {
-					texts.push(buffer.subarray(textOffset, textOffset + textLength).toString());
+				if (
+					textLength > 0 &&
+					textOffset + textLength <= offset + resourceDataLength
+				) {
+					texts.push(
+						buffer.subarray(textOffset, textOffset + textLength).toString(),
+					);
 				}
 				textOffset += textLength;
 			}
@@ -290,14 +310,18 @@ export function parseMdnsResponse(buffer) {
 	}
 
 	// Combine SRV + A records into results
-	const serviceRecords = records.filter(record => record.type === 'SRV');
-	const aRecords = records.filter(record => record.type === 'A');
+	const serviceRecords = records.filter((record) => record.type === 'SRV');
+	const aRecords = records.filter((record) => record.type === 'A');
 
 	for (const serviceRecord of serviceRecords) {
-		const aRecord = aRecords.find(record => record.name === serviceRecord.target);
+		const aRecord = aRecords.find(
+			(record) => record.name === serviceRecord.target,
+		);
 		results.push({
 			name: serviceRecord.name,
-			service: serviceRecord.name.replace(/^[^.]+\./, '').replace(/\.local\.?$/, ''),
+			service: serviceRecord.name
+				.replace(/^[^.]+\./, '')
+				.replace(/\.local\.?$/, ''),
 			port: serviceRecord.port,
 			address: aRecord ? aRecord.address : undefined,
 		});
@@ -305,7 +329,7 @@ export function parseMdnsResponse(buffer) {
 
 	// If no SRV records found but have PTR, still report them
 	if (results.length === 0) {
-		const pointerRecords = records.filter(record => record.type === 'PTR');
+		const pointerRecords = records.filter((record) => record.type === 'PTR');
 		for (const pointerRecord of pointerRecords) {
 			results.push({
 				name: pointerRecord.ptr,
