@@ -163,7 +163,7 @@ await device.stop();
 | 指标 | 覆盖率 |
 |------|--------|
 | Statements | 100% |
-| Branches | 99.08% |
+| Branches | 100% |
 | Functions | 100% |
 | Lines | 100% |
 
