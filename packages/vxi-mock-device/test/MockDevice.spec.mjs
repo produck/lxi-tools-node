@@ -79,8 +79,7 @@ describe('MockDevice', () => {
 
 		it('should match handlers case-insensitively', () => {
 			const device = new MockDevice();
-			let called = false;
-			device.handle('*TST?', () => { called = true; return 'ok'; });
+			device.handle('*TST?', () => 'ok');
 			// The handler is stored uppercase
 			assert.strictEqual(device._handlers.has('*TST?'), true);
 		});
@@ -192,7 +191,7 @@ describe('VXI-11 Protocol Edge Cases', () => {
 	});
 
 	it('should handle VXI-11 request for unknown procedure', async () => {
-		const response = await sendRpcRequest(device.vxi11Port, {
+		void await sendRpcRequest(device.vxi11Port, {
 			program: 0x0607af, // VXI11_CORE_PROGRAM
 			procedure: 999,    // Unknown procedure
 		});
@@ -200,7 +199,7 @@ describe('VXI-11 Protocol Edge Cases', () => {
 	});
 
 	it('should handle VXI-11 request for wrong program', async () => {
-		const response = await sendRpcRequest(device.vxi11Port, {
+		void await sendRpcRequest(device.vxi11Port, {
 			program: 12345, // Wrong program
 			procedure: 10,
 		});
@@ -396,7 +395,7 @@ describe('ConnectionHandler Edge Cases', () => {
 
 	it('should handle portmapper request for non-portmapper program', async () => {
 		// Send a request to portmapper port but with wrong program number
-		const response = await sendRpcRequest(device.portmapperPort, {
+		void await sendRpcRequest(device.portmapperPort, {
 			program: 12345, // Not PORTMAPPER_PROGRAM (100000)
 			procedure: 3,
 		});
@@ -538,7 +537,7 @@ function sendPortmapperRequest(port, targetProgram) {
 				Date.now() & 0xFFFFFFFF,
 				100000,  // PORTMAPPER_PROGRAM
 				3,       // PORTMAPPER_PROC_GETPORT
-				payloadWriter.toBuffer()
+				payloadWriter.toBuffer(),
 			);
 			socket.write(wrapRecord(call));
 		});
