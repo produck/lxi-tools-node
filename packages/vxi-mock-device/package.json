@@ -1,6 +1,6 @@
 {
 	"name": "@produck/vxi-mock-device",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"description": "VXI-11 mock instrument for testing lxi-tools-node without real hardware.",
 	"license": "MIT",
 	"author": "ChaosLee",
