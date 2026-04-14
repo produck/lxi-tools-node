@@ -79,7 +79,7 @@ function wrapRecordMultiFragment(buffer, fragmentSize) {
 // ─── RPC Message Helpers ─────────────────────────────────────────────
 
 function buildRpcReply(xid, payload) {
-	const writer = new XdrWriter(28 + (payload ? payload.length : 0));
+	const writer = new XdrWriter(28 + payload.length);
 
 	writer.writeUInt32(xid);
 	writer.writeUInt32(MSG_TYPE_REPLY);
@@ -88,11 +88,9 @@ function buildRpcReply(xid, payload) {
 	writer.writeUInt32(0);          // verifier length
 	writer.writeUInt32(ACCEPT_SUCCESS);
 
-	if (payload && payload.length > 0) {
-		writer._ensure(payload.length);
-		payload.copy(writer._buffer, writer._offset);
-		writer._offset += payload.length;
-	}
+	writer._ensure(payload.length);
+	payload.copy(writer._buffer, writer._offset);
+	writer._offset += payload.length;
 
 	return writer.toBuffer();
 }
