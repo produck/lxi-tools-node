@@ -4,7 +4,9 @@
 	"description": "VXI-11 mock instrument for testing lxi-tools-node without real hardware.",
 	"license": "MIT",
 	"author": "ChaosLee",
-	"private": "true",
+	"scripts": {
+		"test": "node --test test/index.mjs"
+	},
 	"contributors": [
 		"Opus (AI pair-programmer)"
 	],

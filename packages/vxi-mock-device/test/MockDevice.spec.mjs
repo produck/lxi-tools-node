@@ -292,13 +292,13 @@ describe('ConnectionHandler Edge Cases', () => {
 		// We test this by closing the socket abruptly
 		const socket = net.createConnection(device.vxi11Port, '127.0.0.1');
 		await new Promise(resolve => socket.on('connect', resolve));
-		
+
 		// Add error handler to prevent unhandled error
 		socket.on('error', () => {});
-		
+
 		// Force close the socket - this triggers the server's error handler
 		socket.destroy();
-		
+
 		// Give time for cleanup
 		await new Promise(resolve => setTimeout(resolve, 50));
 	});
@@ -323,16 +323,16 @@ describe('ConnectionHandler Edge Cases', () => {
 
 		// Wait for server to process the invalid message (it will continue/skip it)
 		await new Promise(resolve => setTimeout(resolve, 150));
-		
+
 		socket.destroy();
 	});
-	
+
 	it('should skip processing when parseRpcCall returns null', async () => {
 		// Send multiple messages: invalid followed by valid
 		// This ensures the continue branch is exercised
 		const socket = net.createConnection(device.vxi11Port, '127.0.0.1');
 		await new Promise(resolve => socket.on('connect', resolve));
-		
+
 		// First send an invalid message (wrong message type)
 		const invalidWriter = new XdrWriter();
 		invalidWriter.writeUInt32(99999);  // xid
@@ -340,7 +340,7 @@ describe('ConnectionHandler Edge Cases', () => {
 		invalidWriter.writeUInt32(0);
 		invalidWriter.writeUInt32(0);
 		socket.write(wrapRecord(invalidWriter.toBuffer()));
-		
+
 		// Immediately send a valid CREATE_LINK request
 		const payloadWriter = new XdrWriter(32);
 		payloadWriter.writeInt32(0);
@@ -349,7 +349,7 @@ describe('ConnectionHandler Edge Cases', () => {
 		payloadWriter.writeString('inst0');
 		const validCall = buildRpcCall(12345, 0x0607af, 10, payloadWriter.toBuffer());
 		socket.write(wrapRecord(validCall));
-		
+
 		// Wait for response from the valid request
 		const response = await new Promise((resolve) => {
 			const chunks = [];
@@ -360,7 +360,7 @@ describe('ConnectionHandler Edge Cases', () => {
 			});
 			setTimeout(() => resolve(Buffer.concat(chunks)), 500);
 		});
-		
+
 		socket.destroy();
 		// Should have received response for the valid request
 		assert.ok(response.length > 0, 'Should receive response for valid request after invalid one');
