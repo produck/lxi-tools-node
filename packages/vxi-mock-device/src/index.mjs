@@ -226,11 +226,13 @@ export class MockDevice {
 	 * @param {number}  [options.maxReceiveSize]  VXI-11 maxRecvSize (default 1 MB)
 	 * @param {number}  [options.fragmentSize]    RPC fragment size for multi-fragment
 	 *                                            record marking. 0 = single fragment.
+	 * @param {string}  [options.host]            Listen address (default '127.0.0.1')
 	 */
 	constructor(options = {}) {
 		this._identity = options.identity || 'MOCK,MockDevice,SN001,1.0.0';
 		this._maxRecvSize = options.maxReceiveSize || 0x100000;
 		this._fragmentSize = options.fragmentSize || 0;
+		this._host = options.host || '127.0.0.1';
 		this._handlers = new Map();
 		this._links = new Map();
 		this._nextLinkId = 1;
@@ -254,6 +256,9 @@ export class MockDevice {
 
 	/** TCP port the RAW/SCPI server is listening on. */
 	get rawPort() { return this._rawPort; }
+
+	/** Listen address. */
+	get host() { return this._host; }
 
 	/** Configured *IDN? identity string. */
 	get identity() { return this._identity; }
@@ -294,21 +299,21 @@ export class MockDevice {
 		this._vxiServer = net.createServer((socket) => {
 			new ConnectionHandler(socket, (call) => this._onVxi11(call));
 		});
-		await listen(this._vxiServer, vxi11Port);
+		await listen(this._vxiServer, vxi11Port, this._host);
 		this._vxi11Port = this._vxiServer.address().port;
 
 		// Portmapper server
 		this._pmServer = net.createServer((socket) => {
 			new ConnectionHandler(socket, (call) => this._onPortmapper(call));
 		});
-		await listen(this._pmServer, portmapperPort);
+		await listen(this._pmServer, portmapperPort, this._host);
 		this._portmapperPort = this._pmServer.address().port;
 
 		// RAW/SCPI TCP server (line-based protocol on port 5025)
 		this._rawServer = net.createServer((socket) => {
 			this._handleRawConnection(socket);
 		});
-		await listen(this._rawServer, rawPort);
+		await listen(this._rawServer, rawPort, this._host);
 		this._rawPort = this._rawServer.address().port;
 	}
 
@@ -500,9 +505,9 @@ export class MockDevice {
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-function listen(server, port) {
+function listen(server, port, host) {
 	return new Promise((resolve, reject) => {
-		server.listen(port, '127.0.0.1', resolve);
+		server.listen(port, host, resolve);
 		server.once('error', reject);
 	});
 }

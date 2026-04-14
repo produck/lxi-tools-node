@@ -15,6 +15,9 @@ export declare class MockDevice {
 	/** TCP port the VXI-11 core channel is listening on (available after {@link start}). */
 	readonly vxi11Port: number;
 
+	/** Listen address. */
+	readonly host: string;
+
 	/** Configured *IDN? identity string. */
 	readonly identity: string;
 
@@ -72,6 +75,12 @@ export interface MockDeviceOptions {
 	 * `0` means single-fragment (default).
 	 */
 	fragmentSize?: number;
+
+	/**
+	 * Listen address for all TCP servers.
+	 * @default '127.0.0.1'
+	 */
+	host?: string;
 }
 
 /**

@@ -58,6 +58,7 @@ describe('MockDevice', () => {
 		it('should use default values when no options provided', () => {
 			const device = new MockDevice();
 			assert.strictEqual(device.identity, 'MOCK,MockDevice,SN001,1.0.0');
+			assert.strictEqual(device.host, '127.0.0.1');
 			assert.strictEqual(device.portmapperPort, 0);
 			assert.strictEqual(device.vxi11Port, 0);
 			assert.strictEqual(device.rawPort, 0);
@@ -66,6 +67,30 @@ describe('MockDevice', () => {
 		it('should accept custom identity', () => {
 			const device = new MockDevice({ identity: 'TEST,Custom,123,2.0' });
 			assert.strictEqual(device.identity, 'TEST,Custom,123,2.0');
+		});
+
+		it('should accept custom host', () => {
+			const device = new MockDevice({ host: '0.0.0.0' });
+			assert.strictEqual(device.host, '0.0.0.0');
+		});
+	});
+
+	describe('custom host lifecycle', () => {
+		let device;
+
+		before(async () => {
+			device = new MockDevice({ host: '127.0.0.1' });
+			await device.start();
+		});
+
+		after(async () => {
+			await device.stop();
+		});
+
+		it('should listen on specified host', () => {
+			assert.ok(device.portmapperPort > 0);
+			assert.ok(device.vxi11Port > 0);
+			assert.ok(device.rawPort > 0);
 		});
 	});
 

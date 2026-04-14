@@ -38,6 +38,7 @@ await mock.stop();
 | `identity`       | `string` | `'MOCK,MockDevice,SN001,1.0.0'` | `*IDN?` response                      |
 | `maxReceiveSize` | `number` | `0x100000` (1 MB)               | VXI-11 maxRecvSize reported to client |
 | `fragmentSize`   | `number` | `0`                             | RPC fragment size (0 = single)        |
+| `host`           | `string` | `'127.0.0.1'`                   | Listen address for all TCP servers    |
 
 ### `mock.handle(command, handler)`
 
@@ -63,6 +64,7 @@ Stop the mock device and release all resources.
 | ---------------- | ------------------------------------------- |
 | `portmapperPort` | TCP port of the portmapper (after start)    |
 | `vxi11Port`      | TCP port of the VXI-11 server (after start) |
+| `host`           | Listen address                              |
 | `identity`       | Configured `*IDN?` string                   |
 
 ## Multi-fragment Testing
